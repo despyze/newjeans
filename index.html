@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewJeans Tier List</title>
+    <!-- Tailwind CSS for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #E2E8F0;
+        }
+
+        /* Hide scrollbar for a cleaner look */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tier-list-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .tier-row {
+            display: flex;
+            align-items: center;
+            border: 2px solid #334155;
+            border-radius: 0.75rem;
+            min-height: 8rem;
+            padding: 0.5rem;
+            background-color: #1F2937;
+            transition: all 0.3s ease;
+        }
+
+        .tier-label {
+            min-width: 8rem;
+            padding: 1rem 0.5rem;
+            font-weight: 700;
+            text-align: center;
+            border-right: 2px solid #334155;
+            color: white;
+            flex-shrink: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .tier-items {
+            display: flex;
+            flex-grow: 1;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            min-height: 7rem; /* Maintain height to prevent layout shift */
+            padding: 0.5rem;
+        }
+        
+        /* Specific colors for each tier label */
+        #s-tier .tier-label { background-color: #EF4444; }
+        #a-tier .tier-label { background-color: #F59E0B; }
+        #b-tier .tier-label { background-color: #3B82F6; }
+        #c-tier .tier-label { background-color: #10B981; }
+        #d-tier .tier-label { background-color: #6B7280; }
+        
+        .unranked-songs-container {
+            background-color: #1F2937;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 2px solid #334155;
+        }
+
+        .song-card {
+            cursor: grab;
+            position: relative;
+            text-align: center;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100px; /* Fixed width for consistent layout */
+            flex-shrink: 0;
+        }
+
+        .song-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        .song-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            user-select: none;
+            pointer-events: none; /* Prevents image from interfering with drag event */
+        }
+
+        .song-card p {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 0.25rem 0;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #121212;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #E2E8F0;
+        }
+
+        #share-button {
+            padding: 0.75rem 2rem;
+            background-color: #8B5CF6;
+            color: white;
+            font-weight: 700;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #share-button:hover {
+            background-color: #7C3AED;
+            transform: translateY(-2px);
+        }
+
+        #share-message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: #1F2937;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        }
+        
+        @media (min-width: 640px) {
+            .tier-list-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold mb-2">NewJeans Tier List Maker</h1>
+            <p class="text-lg text-gray-400">Drag and drop the official music videos to rank your favorite NewJeans songs!</p>
+        </header>
+    
+        <!-- Tier List Container -->
+        <div class="tier-list-container">
+            <!-- S Tier -->
+            <div class="tier-row" id="s-tier">
+                <div class="tier-label">S Tier</div>
+                <div class="tier-items"></div>
+            </div>
+            <!-- A Tier -->
+            <div class="tier-row" id="a-tier">
+                <div class="tier-label">A Tier</div>
+                <div class="tier-items"></div>
+            </div>
+            <!-- B Tier -->
+            <div class="tier-row" id="b-tier">
+                <div class="tier-label">B Tier</div>
+                <div class="tier-items"></div>
+            </div>
+            <!-- C Tier -->
+            <div class="tier-row" id="c-tier">
+                <div class="tier-label">C Tier</div>
+                <div class="tier-items"></div>
+            </div>
+            <!-- D Tier -->
+            <div class="tier-row" id="d-tier">
+                <div class="tier-label">D Tier</div>
+                <div class="tier-items"></div>
+            </div>
+        </div>
+    
+        <!-- Unranked Songs Section -->
+        <div class="unranked-songs-container mt-10 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Unranked Songs</h2>
+            <div class="tier-items" id="unranked-songs-grid"></div>
+        </div>
+
+        <!-- Share Button and Message -->
+        <div class="flex flex-col items-center mt-8">
+            <button id="share-button">Save & Share My Ranking</button>
+            <div id="share-message" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span class="modal-close-btn">&times;</span>
+            <p id="video-modal-text" class="text-white text-lg mb-4">Click the button below to watch the video on YouTube.</p>
+            <a id="video-modal-link" href="#" target="_blank" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition duration-300">Watch on YouTube</a>
+        </div>
+    </div>
+    
+    <script>
+        // Data for all the songs, including their names and YouTube video IDs.
+        const songs = [
+            // The video ID for Ditto has been updated based on the user's request.
+            { name: "Ditto", videoId: "Km71Rr9K-Bw" },
+            // The video ID for OMG has been updated based on the user's request.
+            { name: "OMG", videoId: "sVTy_wmn5SU" },
+            // The video ID for Attention has been updated based on the user's request.
+            { name: "Attention", videoId: "x8RIixqumUc" },
+            // The video ID for Hype Boy has been updated based on the user's request.
+            { name: "Hype Boy", videoId: "11cta61wi0g" },
+            { name: "Super Shy", videoId: "ArmDp-zijuc" },
+            // The video ID for ETA has been updated based on the user's request.
+            { name: "ETA", videoId: "s4Ow55AbdCg" },
+            // The video ID for Cool With You has been updated based on the user's request.
+            { name: "Cool With You", videoId: "kKsivrgoyDw" },
+            // The video ID for How Sweet has been updated based on the user's request.
+            { name: "How Sweet", videoId: "Q3K0TOvTOno" },
+            // The video ID for Bubble Gum has been updated based on the user's request.
+            { name: "Bubble Gum", videoId: "ft70sAYrFyY" },
+            { name: "Right Now", videoId: "recesJkEBUI" },
+            // The video ID for New Jeans has been updated based on the user's request.
+            { name: "New Jeans", videoId: "kcelgrGY1h8" }
+        ];
+
+        // Get the container for unranked songs
+        const unrankedSongsGrid = document.getElementById('unranked-songs-grid');
+        // Get all tier list drop zones
+        const tierListDropzones = document.querySelectorAll('.tier-items');
+        // Get the modal and its components
+        const videoModal = document.getElementById('video-modal');
+        const videoModalLink = document.getElementById('video-modal-link');
+        const modalCloseBtn = document.querySelector('.modal-close-btn');
+
+        // New elements for sharing functionality
+        const shareButton = document.getElementById('share-button');
+        const shareMessage = document.getElementById('share-message');
+
+        // Helper function to create a song card element
+        function createSongCard(song) {
+            const card = document.createElement('div');
+            card.className = 'song-card bg-gray-700 hover:bg-gray-600 shadow-md p-2 rounded-xl transition duration-300 transform hover:scale-105';
+            card.setAttribute('draggable', 'true');
+            card.dataset.videoId = song.videoId;
+            card.dataset.songName = song.name;
+
+            const img = document.createElement('img');
+            img.src = `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+            img.alt = `${song.name} thumbnail`;
+            img.className = 'rounded-lg mb-1';
+
+            const name = document.createElement('p');
+            name.textContent = song.name;
+            name.className = 'text-xs text-white font-semibold truncate';
+
+            card.appendChild(img);
+            card.appendChild(name);
+            return card;
+        }
+
+        // Function to initialize the drag and drop functionality
+        function setupDragAndDrop() {
+            // Event listener for when a draggable item starts being dragged
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('song-card')) {
+                    // Set the data that will be transferred during the drag operation
+                    e.dataTransfer.setData('text/plain', e.target.dataset.videoId);
+                    // Add a class to make the dragged element semi-transparent
+                    setTimeout(() => {
+                        e.target.classList.add('opacity-50');
+                    }, 0);
+                }
+            });
+
+            // Event listener for when a drag operation ends
+            document.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('song-card')) {
+                    // Remove the semi-transparent class
+                    e.target.classList.remove('opacity-50');
+                }
+            });
+
+            // Add event listeners to all potential drop zones (the tier sections)
+            tierListDropzones.forEach(zone => {
+                // Prevent the default behavior to allow dropping
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('bg-gray-600');
+                });
+
+                zone.addEventListener('dragleave', (e) => {
+                    zone.classList.remove('bg-gray-600');
+                });
+
+                // Handle the drop event
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('bg-gray-600');
+                    // Get the video ID of the dragged element
+                    const videoId = e.dataTransfer.getData('text/plain');
+                    const draggedElement = document.querySelector(`[data-video-id="${videoId}"]`);
+                    // Append the dragged element to the new drop zone
+                    if (draggedElement) {
+                        zone.appendChild(draggedElement);
+                    }
+                });
+            });
+        }
+
+        // Function to show the video modal with a direct link
+        function showVideoModal(videoId) {
+            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            videoModalLink.href = videoUrl;
+            videoModal.classList.remove('hidden');
+        }
+
+        // Function to hide the video modal
+        function hideVideoModal() {
+            videoModal.classList.add('hidden');
+        }
+
+        // Function to generate and display the shareable text
+        function generateShareableText() {
+            let shareText = "My NewJeans Tier List:\n\n";
+            const tiers = document.querySelectorAll('.tier-row');
+            
+            // Loop through each tier to get the ranked songs
+            tiers.forEach(tier => {
+                const tierName = tier.querySelector('.tier-label').textContent;
+                const songsInTier = Array.from(tier.querySelectorAll('.song-card')).map(card => card.dataset.songName);
+                if (songsInTier.length > 0) {
+                    shareText += `⭐ ${tierName}:\n${songsInTier.join(', ')}\n\n`;
+                }
+            });
+
+            const unrankedSongs = Array.from(unrankedSongsGrid.querySelectorAll('.song-card')).map(card => card.dataset.songName);
+            if (unrankedSongs.length > 0) {
+                shareText += `No Rank:\n${unrankedSongs.join(', ')}\n\n`;
+            }
+
+            shareText += "Made with the NewJeans Tier List Maker.";
+            
+            shareMessage.textContent = shareText;
+            shareMessage.classList.remove('hidden');
+
+            // Copy the text to the clipboard if the browser supports it
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    // Replaced alert with a simple console log as a modal will not show
+                    console.log('Ranking copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            } else {
+                // Fallback for browsers that do not support the Clipboard API
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = shareText;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                try {
+                    document.execCommand('copy');
+                } catch (err) {
+                    console.error('Fallback: Failed to copy text: ', err);
+                }
+                document.body.removeChild(tempTextArea);
+            }
+        }
+
+        // Add initial songs to the unranked section
+        function initializeSongs() {
+            songs.forEach(song => {
+                const card = createSongCard(song);
+                unrankedSongsGrid.appendChild(card);
+            });
+        }
+
+        // Add click event listener to the main container to handle card clicks
+        document.body.addEventListener('click', (e) => {
+            const card = e.target.closest('.song-card');
+            if (card) {
+                showVideoModal(card.dataset.videoId);
+            }
+        });
+
+        // Add click event listener to the modal close button
+        modalCloseBtn.addEventListener('click', hideVideoModal);
+        
+        // Add click event listener to the new share button
+        shareButton.addEventListener('click', generateShareableText);
+
+        // Run the initialization functions when the window loads
+        window.onload = function() {
+            initializeSongs();
+            setupDragAndDrop();
+        };
+
+    </script>
+</body>
+</html>
